@@ -1,0 +1,31 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:mContext="imageencryption.nilusha.com.seci.activity.MainActivity">
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search_white_24dp"
+        android:orderInCategory="100"
+        android:title="@string/action_search"
+        app:showAsAction="always"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        />
+    <item
+    android:id="@+id/action_profile"
+    android:icon="@drawable/ic_search_white_24dp"
+    android:orderInCategory="100"
+    android:title="My Profile"
+    app:showAsAction="never" />
+    <item
+        android:id="@+id/decrypt"
+        android:icon="@drawable/ic_search_white_24dp"
+        android:orderInCategory="100"
+        android:title="Decrypter"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/logout"
+        android:icon="@drawable/ic_search_white_24dp"
+        android:orderInCategory="100"
+        android:title="LogOut"
+        app:showAsAction="never" />
+</menu>

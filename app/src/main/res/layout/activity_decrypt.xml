@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="imageencryption.nilusha.com.seci.activity.Decrypt">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="10dp"
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
+
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <android.support.constraint.ConstraintLayout
+
+            android:layout_width="match_parent"
+
+            android:layout_height="wrap_content">
+
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="16dp"
+
+                android:text="Secret key"
+                android:textColor="@color/Black"
+                app:layout_constraintBottom_toBottomOf="@+id/txtkey"
+                app:layout_constraintEnd_toStartOf="@+id/txtkey"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/txtkey" />
+
+
+            <ImageView
+
+                android:id="@+id/image"
+
+                android:layout_width="0dp"
+
+                android:layout_height="wrap_content"
+
+                android:layout_marginTop="24dp"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                app:layout_constraintBottom_toTopOf="@+id/txtkey"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btngallery"
+                app:layout_constraintVertical_bias="0.365"
+                app:srcCompat="@color/white" />
+
+
+            <Button
+                android:id="@+id/btngallery"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="28dp"
+                android:background="@drawable/buttonbg"
+                android:text="Gallery"
+                android:textColor="@color/GhostWhite"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/txtkey"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="32dp"
+                android:background="@drawable/textshapetransparent"
+                android:ems="10"
+
+                android:inputType="textPersonName"
+                android:textColor="@color/Black"
+                android:textColorHint="@color/black"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/textView2"
+                app:layout_constraintTop_toBottomOf="@+id/image" />
+            <Button
+                android:id="@+id/btnencrypt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginEnd="70dp"
+                android:layout_marginStart="77dp"
+                android:layout_marginTop="22dp"
+                android:background="@drawable/buttonbg"
+                android:text="Decrypt"
+                android:textColor="@color/GhostWhite"
+                app:layout_constraintBottom_toTopOf="@+id/btndownload"
+                app:layout_constraintEnd_toStartOf="@+id/btnUndo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txtkey" />
+            <Button
+                android:id="@+id/btnUndo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="61dp"
+                android:layout_marginStart="70dp"
+                android:background="@drawable/buttonbg"
+                android:text="Undo"
+                android:textColor="@color/GhostWhite"
+                app:layout_constraintBottom_toBottomOf="@+id/btnencrypt"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btnencrypt"
+                app:layout_constraintTop_toTopOf="@+id/btnencrypt" />
+            <Button
+
+                android:id="@+id/btndownload"
+
+                android:layout_width="104dp"
+
+                android:layout_height="wrap_content"
+
+                android:layout_marginBottom="50dp"
+                android:layout_marginEnd="140dp"
+                android:layout_marginStart="140dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/buttonbg"
+                android:text="Save"
+                android:textColor="@color/GhostWhite"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnencrypt" />
+
+
+        </android.support.constraint.ConstraintLayout>
+
+
+    </ScrollView>
+
+
+</android.support.constraint.ConstraintLayout>
