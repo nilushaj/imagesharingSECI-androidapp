@@ -4,10 +4,8 @@ package imageencryption.nilusha.com.seci.model;
 public class Message {
     private String id;
     private String from;
-   // private String subject;
     private String message;
     private String timestamp;
-    //private String picture;
     private boolean isImportant;
     private boolean isRead;
     private int color = -1;
@@ -17,10 +15,8 @@ public class Message {
         this.count=count;
         this.id=id;
         this.from=from;
-        //this.subject=subject;
         this.message=message;
         this.timestamp=timestamp;
-       // this.picture=picture;
         this.isImportant=isImportant;
         this.isRead=isRead;
         this.color=color;
@@ -49,14 +45,6 @@ public class Message {
         this.from = from;
     }
 
-//    public String getSubject() {
-//        return subject;
-//    }
-
-//    public void setSubject(String subject) {
-//        this.subject = subject;
-//    }
-
     public String getMessage() {
         return message;
     }
@@ -80,14 +68,6 @@ public class Message {
     public void setImportant(boolean important) {
         isImportant = important;
     }
-
-//    public String getPicture() {
-//        return picture;
-//    }
-//
-//    public void setPicture(String picture) {
-//        this.picture = picture;
-//    }
 
     public boolean isRead() {
         return isRead;

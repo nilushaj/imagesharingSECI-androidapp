@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
@@ -33,7 +32,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +42,7 @@ import imageencryption.nilusha.com.seci.adapter.MessagesAdapter;
 import imageencryption.nilusha.com.seci.helper.DividerItemDecoration;
 import imageencryption.nilusha.com.seci.model.Message;
 
-
+// show encrypted images comes through seci system
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, MessagesAdapter.MessageAdapterListener {
     private List<Message> messages = new ArrayList<>();
     private RecyclerView recyclerView;
@@ -71,12 +69,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
                 Intent intent=new Intent(MainActivity.this,Composer.class);
                 startActivity(intent);
             }
         });
+
         firebaseAuth = FirebaseAuth.getInstance();
         if(firebaseAuth.getCurrentUser()== null){
             //close this activity
@@ -144,11 +141,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                     Message dict = new Message(count,id, from,message,timestamp,isImportant,isRead,getRandomMaterialColor("400"));
                     count++;
-                    System.out.println("***************************************"+ds+"**************************************");
+
                     messages.add(dict);
 
                 }
-                System.out.println("Messages"+messages);
                 recyclerView.setAdapter(mAdapter);
                 mAdapter.notifyDataSetChanged();
                 swipeRefreshLayout.setRefreshing(false);
@@ -335,7 +331,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 @Override
                 public void run() {
                     mAdapter.resetAnimationIndex();
-                    // mAdapter.notifyDataSetChanged();
                 }
             });
         }
@@ -348,11 +343,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mAdapter.resetAnimationIndex();
         List<Integer> selectedItemPositions =
                 mAdapter.getSelectedItems();
-        System.out.println("positions "+selectedItemPositions);
-
         for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
-//
-            System.out.println("userid"+ messages.get(selectedItemPositions.get(i)).getId());
             usersRef.child(messages.get(selectedItemPositions.get(i)).getId()).removeValue();
             FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
             StorageReference photoRef =mFirebaseStorage.getReferenceFromUrl(messages.get(selectedItemPositions.get(i)).getMessage());
@@ -365,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    // Uh-oh, an error occurred!
+                    System.out.println("error");
 
                 }
             });

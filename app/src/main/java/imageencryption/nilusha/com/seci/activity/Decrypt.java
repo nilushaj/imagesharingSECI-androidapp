@@ -13,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -22,8 +23,6 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -53,19 +52,18 @@ import imageencryption.nilusha.com.seci.Sign.SignIn;
 
 import static imageencryption.nilusha.com.seci.App.CHANNEL_1_ID;
 
+// decrypt images from local storage
 public class Decrypt extends AppCompatActivity implements View.OnClickListener{
     private Button galelry;
 
     private Button dec;
     private ImageView img;
-    String encrypted = "";
     int total=0;
     int widthorg;
     int heightorg;
     private EditText txtkey;
     private FirebaseAuth firebaseAuth=null;
     private static final int PICK_IMAGE = 1;
-    Uri uri=null;
     private Button undo;
     private Uri fileUri = null;
     private Button save;
@@ -161,19 +159,20 @@ public class Decrypt extends AppCompatActivity implements View.OnClickListener{
 
     }
 
-
+    // decrypt local storage image
     private void decrypt(){
-        final ProgressDialog decrypt = new ProgressDialog(Decrypt.this,R.style.AppDialogThemeBaseActivity);
-        decrypt.setCanceledOnTouchOutside(false);
-        decrypt.setMessage("Decrypting, please wait...");
-        decrypt.show();
+        final ProgressDialog decryptDlg= new ProgressDialog(Decrypt.this,R.style.AppDialogThemeBaseActivity);
+        decryptDlg.setCanceledOnTouchOutside(false);
+        decryptDlg.setMessage("Decrypting, please wait...");
+        decryptDlg.show();
         long startTime = SystemClock.currentThreadTimeMillis();
+
+        //get encrypted image height and width
         Bitmap bitmap=((BitmapDrawable)img.getDrawable()).getBitmap();
         int height= bitmap.getHeight();
         int width=bitmap.getWidth();
-        System.out.println("Resolution :"+String.valueOf(height)+"x"+String.valueOf(width));
 
-
+        // get secret key
         String value=txtkey.getText().toString();
 
         int pix[]=new int[height*width];
@@ -181,19 +180,16 @@ public class Decrypt extends AppCompatActivity implements View.OnClickListener{
         char characters[][]=new char[height][width];
         int seed[][]=new int[height][width];
         int len=0;
-        bitmap.getPixels(pix, 0, width, 0, 0, width, height);
 
+        //save pixel from ecrypted image to pix array
+        bitmap.getPixels(pix, 0, width, 0, 0, width, height);
+        // generate seed no
         for(int cnt=1;cnt<=value.length();cnt++){
             total=total+(cnt*(int)value.charAt(cnt-1));
         }
-        try {
-            encrypted = AESUtils.encrypt(value);
-            len=encrypted.length();
 
-            Log.d("TEST", "encrypted:" + encrypted);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        //generate random number matrix
         Random randomGenerator = new Random(total);
         int charcnt=0;
         for(int h=0;h<height;h++){
@@ -204,7 +200,8 @@ public class Decrypt extends AppCompatActivity implements View.OnClickListener{
                 int randomInt= randomGenerator.nextInt(255);
 
                 seed[h][w]=randomInt;
-                characters[h][w]=encrypted.charAt(charcnt);
+                //generate ascii value matrix
+                characters[h][w]=value.charAt(charcnt);
 
                 charcnt++;
 
@@ -217,23 +214,22 @@ public class Decrypt extends AppCompatActivity implements View.OnClickListener{
                 int index = h * width + w;
 
                 int ascii = (int) characters[h][w];
-                int seedno= seed[h][w];
+                int randomValue= seed[h][w];
 
-
-
-                A= (pix[index] >> 24) & 0xff;
-                //A= Color.alpha(pixel)  ^ randomInt;
-
-                R = (pix[index] >> 16) & 0xff ^seedno^ ascii;
-
-                G = (pix[index] >> 8) & 0xff ^seedno ^ ascii;
-
-                B = pix[index] & 0xff ^seedno^ ascii;
+//              extract alpha value from pixel and do xor
+                A = (pix[index] >> 24) & 0xff ^ ascii ^ randomValue;
+//              extract red value from pixel and do xor
+                R = (pix[index] >> 16) & 0xff ^ ascii ^ randomValue;
+//              extract green value from pixel and do xor
+                G = (pix[index] >> 8) & 0xff ^ ascii ^ randomValue;
+//              extract blue value from pixel and do xor
+                B = pix[index] & 0xff ^ ascii ^ randomValue;
+//              save encrypted rgba values to pixel array
                 pix[index] = (A << 24) | (R << 16) | (G << 8) | B;
             }
         }
 
-
+        // create decrypted image using pix array
         Bitmap bmp = Bitmap.createBitmap(pix, width, height, Bitmap.Config.ARGB_8888);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -252,12 +248,14 @@ public class Decrypt extends AppCompatActivity implements View.OnClickListener{
         long timeInterval = SystemClock.currentThreadTimeMillis() - startTime;
         System.out.println("Decrypt time: " +timeInterval);
 
-        decrypt.dismiss();
+        decryptDlg.dismiss();
 
 
 
 
     }
+
+    //permission request
     protected final void askForPermissions(String[] permissions, int requestCode) {
         List<String> permissionsToRequest = new ArrayList<>();
         for (String permission : permissions) {
@@ -307,6 +305,9 @@ public class Decrypt extends AppCompatActivity implements View.OnClickListener{
             }
         }
     }
+
+
+    //download decrypt image async task
     public class Downloading extends AsyncTask<String, Void, Integer>
     {
 

@@ -2,11 +2,7 @@ package imageencryption.nilusha.com.seci.activity;
 
 
 import android.Manifest;
-import android.app.Activity;
-
-import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -25,8 +21,6 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.util.TimingLogger;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -37,7 +31,6 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
@@ -68,13 +61,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-
 import imageencryption.nilusha.com.seci.R;
 import imageencryption.nilusha.com.seci.Sign.SignIn;
 import io.github.memfis19.annca.Annca;
 import io.github.memfis19.annca.internal.configuration.AnncaConfiguration;
 
-public class Composer extends AppCompatActivity implements View.OnClickListener{
+// encrypting images
+public class Composer extends AppCompatActivity implements View.OnClickListener {
     private Button galelry;
     private Button camera;
     private Button enc;
@@ -83,44 +76,41 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
     private EditText txtkey;
     private Spinner spntype;
     private ImageView img;
-    private String  userid;
     String encrypted = "";
-    int total=0;
+    int total = 0;
     int widthorg;
     int heightorg;
     private static final int REQUEST_CAMERA_PERMISSIONS = 931;
     private static final int PICK_IMAGE = 1;
-    Uri uri=null;
     private Button undo;
     private Uri fileUri = null;
     private static final int CAPTURE_MEDIA = 368;
-    String filepath="";
-    private  ArrayList<String> list=new ArrayList<>();
+    String filepath = "";
+    private ArrayList<String> list = new ArrayList<>();
     FirebaseStorage storage;
     StorageReference storageReference;
-    private FirebaseAuth firebaseAuth=null;
+    private FirebaseAuth firebaseAuth = null;
     private TextView lbluser;
     private EditText username;
-    private boolean available=false;
     private Toolbar mtoolbar;
     private String seciuser;
-    private static final String TAG = Composer.class.getName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_composer);
-        galelry=(Button)findViewById(R.id.btngallery);
-        camera=(Button)findViewById(R.id.btncamera);
-        enc=(Button)findViewById(R.id.btnencrypt);
-        sendkey=(Button)findViewById(R.id.sendkey);
-        sendimage=(Button)findViewById(R.id.btnupload);
-        undo=(Button)findViewById(R.id.btnUndo);
-        txtkey=(EditText) findViewById(R.id.txtkey);
-        spntype=(Spinner) findViewById(R.id.spntype);
-        img=(ImageView) findViewById(R.id.image);
-        lbluser=(TextView) findViewById(R.id.lbluser);
-        username=(EditText) findViewById(R.id.txtusername);
-        mtoolbar=(Toolbar) findViewById(R.id.toolbar);
+        galelry = (Button) findViewById(R.id.btngallery);
+        camera = (Button) findViewById(R.id.btncamera);
+        enc = (Button) findViewById(R.id.btnencrypt);
+        sendkey = (Button) findViewById(R.id.sendkey);
+        sendimage = (Button) findViewById(R.id.btnupload);
+        undo = (Button) findViewById(R.id.btnUndo);
+        txtkey = (EditText) findViewById(R.id.txtkey);
+        spntype = (Spinner) findViewById(R.id.spntype);
+        img = (ImageView) findViewById(R.id.image);
+        lbluser = (TextView) findViewById(R.id.lbluser);
+        username = (EditText) findViewById(R.id.txtusername);
+        mtoolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mtoolbar);
         mtoolbar.setTitle("Composer");
         lbluser.setEnabled(false);
@@ -128,44 +118,41 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
         galelry.requestFocus();
 
         firebaseAuth = FirebaseAuth.getInstance();
-        if(firebaseAuth.getCurrentUser()== null){
-            //close this activity
-            if(firebaseAuth.getCurrentUser().isEmailVerified()){
-                Intent intent=new Intent(Composer.this,SignIn.class);
+
+        //check user login status
+        if (firebaseAuth.getCurrentUser() == null) {
+            if (firebaseAuth.getCurrentUser().isEmailVerified()) {
+                Intent intent = new Intent(Composer.this, SignIn.class);
                 startActivity(intent);
-            }
-            else{
-                Toast.makeText(getApplicationContext(),"please check your email and verify",Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "please check your email and verify", Toast.LENGTH_LONG).show();
                 firebaseAuth.getInstance().signOut();
             }
         }
 
-        System.out.println("UserID "+firebaseAuth.getCurrentUser().getUid().toString());
         DatabaseReference rootRef1 = FirebaseDatabase.getInstance().getReference();
         DatabaseReference usersRef = rootRef1.child("seciusers").child(firebaseAuth.getCurrentUser().getUid().toString());
         ValueEventListener eventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                seciuser=dataSnapshot.child("seciusername").getValue(String.class);
+                seciuser = dataSnapshot.child("seciusername").getValue(String.class);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getApplicationContext(),"Error"+databaseError,Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Error" + databaseError, Toast.LENGTH_LONG).show();
             }
         };
         usersRef.addListenerForSingleValueEvent(eventListener);
 
-
-
-
+        //add items to spinner
         list.add("SECI");
         list.add("Save to Device");
         list.add("Other");
 
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
-        ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,list);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, list);
         spntype.setAdapter(adapter);
 
         enc.setEnabled(false);
@@ -189,25 +176,19 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
                             android.Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQUEST_CAMERA_PERMISSIONS);
         }
-        spntype.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-        {
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
-            {
+        spntype.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedItem = parent.getItemAtPosition(position).toString();
-                if(selectedItem.equals("Other"))
-                {
+                if (selectedItem.equals("Other")) {
                     lbluser.setVisibility(view.GONE);
                     username.setVisibility(view.GONE);
-                }
-                else if(selectedItem.equals("SECI"))
-                {
+                } else if (selectedItem.equals("SECI")) {
                     lbluser.setVisibility(view.VISIBLE);
                     username.setVisibility(view.VISIBLE);
                     lbluser.setText("Enter User Name");
                     sendimage.setText("Send");
 
-                }
-                else if(selectedItem.equals("Save to Device")){
+                } else if (selectedItem.equals("Save to Device")) {
                     lbluser.setVisibility(view.VISIBLE);
                     username.setVisibility(view.VISIBLE);
                     lbluser.setText("Enter File Name");
@@ -215,16 +196,18 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
 
 
                 }
-            } // to close the onItemSelected
-            public void onNothingSelected(AdapterView<?> parent)
-            {
+            }
+
+            public void onNothingSelected(AdapterView<?> parent) {
 
             }
         });
 
 
-
     }
+
+    //request permisson
+
     protected final void askForPermissions(String[] permissions, int requestCode) {
         List<String> permissionsToRequest = new ArrayList<>();
         for (String permission : permissions) {
@@ -237,24 +220,21 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
         }
     }
 
-
+    //upload encrypted image to firebase storage
     private void uploadImage() {
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference usersRef = rootRef.child("seciusers");
 
-        System.out.println("SECI USER"+ seciuser);
+        System.out.println("SECI USER" + seciuser);
         usersRef.orderByChild("seciusername").equalTo(username.getText().toString().trim())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
-                        if(dataSnapshot.exists()){
-                            String key = "public";
-                            //String userid=dataSnapshot.getChildren().toString();
-                            //System.out.println("USERID"+ userid);
-                            for (DataSnapshot child: dataSnapshot.getChildren())
-                            {
+                        if (dataSnapshot.exists()) {
+                            String key = "";
+                            for (DataSnapshot child : dataSnapshot.getChildren()) {
                                 key = child.getKey().toString();
 
                             }
@@ -263,14 +243,14 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
                                             Locale.getDefault()).format(new Date());
 
                             String imageFileName = "E_" + timeStamp + ".png";
-                            final String datetime= new SimpleDateFormat("dd/MM/yyyy hh:mm a",
+                            final String datetime = new SimpleDateFormat("dd/MM/yyyy hh:mm a",
                                     Locale.getDefault()).format(new Date());
-                            System.out.println("DATE "+datetime);
+                            System.out.println("DATE " + datetime);
 
-                            try{
+                            try {
                                 final File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
                                         imageFileName);
-                                Bitmap bm=((BitmapDrawable)img.getDrawable()).getBitmap();
+                                Bitmap bm = ((BitmapDrawable) img.getDrawable()).getBitmap();
                                 OutputStream outputStream = new FileOutputStream(file);
                                 bm.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
                                 outputStream.close();
@@ -283,48 +263,46 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
 
                                 Composer.this.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
-                                Uri filePath =FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".provider", file);
-                                if(filePath != null)
-                                {
+                                Uri filePath = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".provider", file);
+                                if (filePath != null) {
                                     final KProgressHUD progressDialog = KProgressHUD.create(Composer.this)
                                             .setStyle(KProgressHUD.Style.PIE_DETERMINATE)
                                             .setLabel("Please wait Sending...")
                                             .setCancellable(false)
                                             .setDimAmount(0.5f)
-                                            .setSize(300,200)
+                                            .setSize(300, 200)
                                             .setMaxProgress(100)
                                             .show();
 
-                                    StorageReference ref = storageReference.child("images/"+key+"/"+imageFileName);
+                                    StorageReference ref = storageReference.child("images/" + key + "/" + imageFileName);
                                     final String finalKey = key;
                                     ref.putFile(filePath)
                                             .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                                 @Override
                                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                                    try{
+                                                    try {
 
                                                         DatabaseReference myRef = rootRef.child("messages");
 
-                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString()+timeStamp).child("message").
+                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString() + timeStamp).child("message").
                                                                 setValue(taskSnapshot.getDownloadUrl().toString());
-                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString()+timeStamp).child("from").
+                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString() + timeStamp).child("from").
                                                                 setValue(seciuser);
-                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString()+timeStamp).child("timestamp").
+                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString() + timeStamp).child("timestamp").
                                                                 setValue(datetime);
-                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString()+timeStamp).child("id").
-                                                                setValue(firebaseAuth.getCurrentUser().getUid().toString()+timeStamp);
-                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString()+timeStamp).child("isImportant").
+                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString() + timeStamp).child("id").
+                                                                setValue(firebaseAuth.getCurrentUser().getUid().toString() + timeStamp);
+                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString() + timeStamp).child("isImportant").
                                                                 setValue(false);
-                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString()+timeStamp).child("isRead").
+                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString() + timeStamp).child("isRead").
                                                                 setValue(false);
-                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString()+timeStamp).child("timeid").
+                                                        myRef.child(finalKey).child("inbox").child(firebaseAuth.getCurrentUser().getUid().toString() + timeStamp).child("timeid").
                                                                 setValue(timeStamp);
 
 
                                                         progressDialog.dismiss();
                                                         Toast.makeText(Composer.this, "Sending Success", Toast.LENGTH_LONG).show();
-                                                    }
-                                                    catch (Exception e){
+                                                    } catch (Exception e) {
                                                         Toast.makeText(Composer.this, "Sending Failed", Toast.LENGTH_LONG).show();
                                                     }
 
@@ -334,30 +312,28 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
                                                 @Override
                                                 public void onFailure(@NonNull Exception e) {
                                                     progressDialog.dismiss();
-                                                    Toast.makeText(Composer.this, "Sending Failed "+e.getMessage(), Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(Composer.this, "Sending Failed " + e.getMessage(), Toast.LENGTH_LONG).show();
                                                 }
                                             })
                                             .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                                                 @Override
                                                 public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                                                    double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot
                                                             .getTotalByteCount());
-                                                    progressDialog.setProgress((int)progress);
-                                                    progressDialog.setDetailsLabel((int)progress+"% Finished");
+                                                    progressDialog.setProgress((int) progress);
+                                                    progressDialog.setDetailsLabel((int) progress + "% Finished");
                                                 }
                                             });
                                 }
 
-                            }
-                            catch (IOException e){
+                            } catch (IOException e) {
                                 e.printStackTrace();
                             }
 
-                        }
-                        else {
+                        } else {
 
                             sendimage.setEnabled(true);
-                            AlertDialog.Builder builder1 = new AlertDialog.Builder(Composer.this,R.style.AppDialogThemeBaseActivity);
+                            AlertDialog.Builder builder1 = new AlertDialog.Builder(Composer.this, R.style.AppDialogThemeBaseActivity);
                             builder1.setTitle("Invalid User!");
                             builder1.setMessage("User didn't found try again!!");
                             builder1.setCancelable(false);
@@ -379,7 +355,7 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        Toast.makeText(Composer.this,"Coundn't connect to the server",Toast.LENGTH_LONG).show();
+                        Toast.makeText(Composer.this, "Coundn't connect to the server", Toast.LENGTH_LONG).show();
                     }
 
                 });
@@ -391,25 +367,18 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
         int i = view.getId();
         if (i == R.id.btncamera) {
             CaptureImage();
-        }
-        else if (i == R.id.btngallery) {
-            fileUri=null;
+        } else if (i == R.id.btngallery) {
+            fileUri = null;
             showChoosingImageFile();
-        }
+        } else if (i == R.id.btnencrypt) {
 
-
-        else if (i == R.id.btnencrypt) {
-
-            if(fileUri==null){
-                Toast.makeText(getApplicationContext(),"please select an image",Toast.LENGTH_LONG).show();
-            }
-            else if(txtkey.getText().toString().equals("")){
-                Toast.makeText(getApplicationContext(),"please enter a key",Toast.LENGTH_LONG).show();
-            }
-            else {
+            if (fileUri == null) {
+                Toast.makeText(getApplicationContext(), "please select an image", Toast.LENGTH_LONG).show();
+            } else if (txtkey.getText().toString().equals("")) {
+                Toast.makeText(getApplicationContext(), "please enter a key", Toast.LENGTH_LONG).show();
+            } else {
                 undo.setEnabled(true);
                 enc.setEnabled(false);
-
 
 
                 encryptingImage();
@@ -422,23 +391,18 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
                 username.setEnabled(true);
                 sendimage.setEnabled(true);
             }
-        }
-        else if (i == R.id.btnupload) {
+        } else if (i == R.id.btnupload) {
             sendimage.setEnabled(false);
             String text = spntype.getSelectedItem().toString();
-            if(text.equals("SECI")){
+            if (text.equals("SECI")) {
                 uploadImage();
-            }
-            else if(text.equals("Other")) {
+            } else if (text.equals("Other")) {
                 SendImage();
-            }
-            else if(text.equals("Save to Device")) {
-               SaveImage();
+            } else if (text.equals("Save to Device")) {
+                SaveImage();
             }
 
-        }
-
-        else if (i == R.id.btnUndo) {
+        } else if (i == R.id.btnUndo) {
             undo.setEnabled(false);
             enc.setEnabled(true);
             txtkey.setEnabled(true);
@@ -449,35 +413,30 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
                     .into(new SimpleTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                            widthorg= resource.getWidth();
+                            widthorg = resource.getWidth();
                             heightorg = resource.getHeight();
-                            System.out.println("RES ORIGINAL"+widthorg+"x"+heightorg);
+                            System.out.println("RES ORIGINAL" + widthorg + "x" + heightorg);
                             img.setImageBitmap(resource);
                         }
                     });
-//            Glide.with(this)
-//                    .load(fileUri)
-//                    .asBitmap() //needed for obtaining bitmap
-//                    .into(img);
             spntype.setEnabled(false);
             sendimage.setEnabled(false);
             lbluser.setEnabled(true);
             username.setEnabled(false);
 
 
-        }
-        else if (i == R.id.sendkey) {
-            if(!txtkey.getText().toString().equals(null)) {
+        } else if (i == R.id.sendkey) {
+            if (!txtkey.getText().toString().equals(null)) {
                 SendKey();
-            }
-            else{
-                Toast.makeText(getApplicationContext(),"please enter a key",Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "please enter a key", Toast.LENGTH_LONG).show();
             }
 
         }
 
     }
 
+    //save encrypted image to local storage
     private void SaveImage() {
         final KProgressHUD saveprogressDialog = KProgressHUD.create(Composer.this)
                 .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
@@ -487,13 +446,13 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
                 .setAnimationSpeed(2)
                 .setDimAmount(0.5f)
                 .show();
-        String imageFileName = username.getText()+".png";
+        String imageFileName = username.getText() + ".png";
 
 
-        try{
+        try {
             final File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
                     imageFileName);
-            Bitmap bm=((BitmapDrawable)img.getDrawable()).getBitmap();
+            Bitmap bm = ((BitmapDrawable) img.getDrawable()).getBitmap();
             OutputStream outputStream = new FileOutputStream(file);
             bm.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
             outputStream.close();
@@ -507,36 +466,37 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
             Composer.this.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
 
-            Toast.makeText(Composer.this,"Saved Successfully",Toast.LENGTH_LONG).show();
+            Toast.makeText(Composer.this, "Saved Successfully", Toast.LENGTH_LONG).show();
             saveprogressDialog.dismiss();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
             sendimage.setEnabled(true);
         }
     }
 
-    private void SendKey(){
+    //send secret key through user selected application
+    private void SendKey() {
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT,txtkey.getText().toString());
+        sendIntent.putExtra(Intent.EXTRA_TEXT, txtkey.getText().toString());
         sendIntent.setType("text/plain");
-        startActivity(Intent.createChooser(sendIntent,"Select an Application" ));
+        startActivity(Intent.createChooser(sendIntent, "Select an Application"));
     }
-    private void SendImage(){
 
+    //send encrypted through user selected application
+    private void SendImage() {
 
 
         String timeStamp =
                 new SimpleDateFormat("yyyyMMdd_HHmmss",
                         Locale.getDefault()).format(new Date());
         String imageFileName = "E_" + timeStamp + ".png";
-        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()+"/";
 
-        try{
+
+        try {
             final File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
                     imageFileName);
-            Bitmap bm=((BitmapDrawable)img.getDrawable()).getBitmap();
+            Bitmap bm = ((BitmapDrawable) img.getDrawable()).getBitmap();
             OutputStream outputStream = new FileOutputStream(file);
             bm.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
             outputStream.close();
@@ -550,18 +510,19 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_SEND);
             intent.setType("image/*");
-            Uri outputFileUri =FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".provider", file);
-            System.out.println("OutPut :"+outputFileUri);
-            intent.putExtra(Intent.EXTRA_STREAM,outputFileUri );
+            Uri outputFileUri = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".provider", file);
+            System.out.println("OutPut :" + outputFileUri);
+            intent.putExtra(Intent.EXTRA_STREAM, outputFileUri);
             startActivity(Intent.createChooser(intent, "Select an Application"));
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
             sendimage.setEnabled(true);
         }
 
 
     }
+
+    //select image from gallery
     private void showChoosingImageFile() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -569,16 +530,14 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
 
 
-
     }
-
 
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == PICK_IMAGE ){
-            if ( resultCode == RESULT_OK && data != null && data.getData() != null) {
+        //load image from gallery
+        if (requestCode == PICK_IMAGE) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
 
                 fileUri = data.getData();
 
@@ -588,40 +547,36 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
                         .into(new SimpleTarget<Bitmap>() {
                             @Override
                             public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                widthorg= resource.getWidth();
+                                widthorg = resource.getWidth();
                                 heightorg = resource.getHeight();
-                                System.out.println("RES ORIGINAL"+widthorg+"x"+heightorg);
+                                System.out.println("RES ORIGINAL" + widthorg + "x" + heightorg);
                                 img.setImageBitmap(resource);
                             }
                         });
                 txtkey.setEnabled(true);
                 enc.setEnabled(true);
-            }
-            else{
-                Toast.makeText(getApplicationContext(),"Unable to select an image",Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Unable to select an image", Toast.LENGTH_LONG).show();
             }
         }
+        //load image from camera
         if (requestCode == CAPTURE_MEDIA) {
             if (resultCode == RESULT_OK) {
 
 
                 filepath = data.getStringExtra(AnncaConfiguration.Arguments.FILE_PATH);
-                System.out.println("Path*******"+filepath);
-                fileUri =Uri.fromFile(new File(filepath));
+                System.out.println("Path*******" + filepath);
+                fileUri = Uri.fromFile(new File(filepath));
                 getWindow().setFormat(PixelFormat.TRANSLUCENT);
-//                Glide.with(this)
-//                        .load(fileUri)
-//                        .asBitmap() //needed for obtaining bitmap
-//                        .into(img);
                 Glide.with(getApplicationContext())
                         .load(fileUri)
                         .asBitmap()
                         .into(new SimpleTarget<Bitmap>() {
                             @Override
                             public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                widthorg= resource.getWidth();
+                                widthorg = resource.getWidth();
                                 heightorg = resource.getHeight();
-                                System.out.println("RES ORIGINAL"+widthorg+"x"+heightorg);
+                                System.out.println("RES ORIGINAL" + widthorg + "x" + heightorg);
                                 img.setImageBitmap(resource);
                             }
                         });
@@ -630,28 +585,15 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
 
 
             } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(this, "Camera cancelled!",  Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Camera cancelled!", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "Failed to Capture!",  Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Failed to Capture!", Toast.LENGTH_LONG).show();
             }
-        }
-        if(requestCode == 1337) {
-            if(resultCode == Activity.RESULT_OK){
-                Uri selectedImage = data.getData();
-
-
-
-
-
-            }
-
         }
     }
 
-
-
-
-    private void encryptingImage(){
+    //encrypting process
+    private void encryptingImage() {
         final KProgressHUD encprogressDialog = KProgressHUD.create(Composer.this)
                 .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
                 .setLabel("Please wait")
@@ -662,74 +604,67 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
                 .show();
         long startTime = SystemClock.currentThreadTimeMillis();
 
-        Bitmap bitmap=((BitmapDrawable)img.getDrawable()).getBitmap();
-        int height= bitmap.getHeight();
-        int width=bitmap.getWidth();
-        System.out.println("Resolution :"+String.valueOf(height)+"x"+String.valueOf(width));
+//        get original image height and width
+        Bitmap bitmap = ((BitmapDrawable) img.getDrawable()).getBitmap();
+        int height = bitmap.getHeight();
+        int width = bitmap.getWidth();
+        System.out.println("Resolution :" + String.valueOf(height) + "x" + String.valueOf(width));
 
+//      get secret key
+        String value = txtkey.getText().toString();
 
-
-
-        String value=txtkey.getText().toString();
-
-        int pix[]=new int[height*width];
-        int R,G,B,A;
-        char characters[][]=new char[height][width];
-        int seed[][]=new int[height][width];
-        int len=0;
+        int pix[] = new int[height * width];
+        int R, G, B, A;
+        char characters[][] = new char[height][width];
+        int seed[][] = new int[height][width];
+        int len = 0;
+//        get pixels of original image and save to pix array
         bitmap.getPixels(pix, 0, width, 0, 0, width, height);
 
-        for(int cnt=1;cnt<=value.length();cnt++){
-            total=total+(cnt*(int)value.charAt(cnt-1));
+//        get seed no
+        for (int cnt = 1; cnt <= value.length(); cnt++) {
+            total = total + (cnt * (int) value.charAt(cnt - 1));
         }
-        try {
-            encrypted = AESUtils.encrypt(value);
-            len=encrypted.length();
 
-            Log.d("TEST", "encrypted:" + encrypted);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        generate random number matrix
         Random randomGenerator = new Random(total);
-        int charcnt=0;
-        for(int h=0;h<height;h++){
-            for(int w=0;w<width;w++){
-                if(charcnt==len){
-                    charcnt=0;
+        int charcnt = 0;
+        for (int h = 0; h < height; h++) {
+            for (int w = 0; w < width; w++) {
+                if (charcnt == len) {
+                    charcnt = 0;
                 }
-                int randomInt= randomGenerator.nextInt(255);
+                int randomInt = randomGenerator.nextInt(255);
 
-                seed[h][w]=randomInt;
-                characters[h][w]=encrypted.charAt(charcnt);
-
+                seed[h][w] = randomInt;
+//                generate character matrix using ascii values
+                characters[h][w] = value.charAt(charcnt);
                 charcnt++;
-
             }
 
         }
 
-        for(int h=0;h<height;h++){
-            for(int w=0;w<width;w++){
+        for (int h = 0; h < height; h++) {
+            for (int w = 0; w < width; w++) {
                 int index = h * width + w;
 
                 int ascii = (int) characters[h][w];
-                int seedno= seed[h][w];
+                int randomValue = seed[h][w];
 
-
-
-                A= (pix[index] >> 24) & 0xff;
-                //A= Color.alpha(pixel)  ^ randomInt;
-
-                R = (pix[index] >> 16) & 0xff ^ascii^ seedno;
-
-                G = (pix[index] >> 8) & 0xff ^ascii ^ seedno;
-
-                B = pix[index] & 0xff ^ascii ^ seedno;
+//              extract alpha value from pixel and do xor
+                A = (pix[index] >> 24) & 0xff ^ ascii ^ randomValue;
+//              extract red value from pixel and do xor
+                R = (pix[index] >> 16) & 0xff ^ ascii ^ randomValue;
+//              extract green value from pixel and do xor
+                G = (pix[index] >> 8) & 0xff ^ ascii ^ randomValue;
+//              extract blue value from pixel and do xor
+                B = pix[index] & 0xff ^ ascii ^ randomValue;
+//              save encrypted rgba values to pixel array
                 pix[index] = (A << 24) | (R << 16) | (G << 8) | B;
             }
         }
 
-
+//      create encrypted image using pixel array
         Bitmap bmp = Bitmap.createBitmap(pix, width, height, Bitmap.Config.ARGB_8888);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -739,31 +674,26 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
                 .into(new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                        widthorg= resource.getWidth();
+                        widthorg = resource.getWidth();
                         heightorg = resource.getHeight();
-                        System.out.println("RES ORIGINAL"+widthorg+"x"+heightorg);
+                        System.out.println("RES ORIGINAL" + widthorg + "x" + heightorg);
                         img.setImageBitmap(resource);
                     }
                 });
-//        Glide.with(Composer.this)
-//                .load(stream.toByteArray())
-//                .asBitmap()
-//                .into(img);
 
         long timeInterval = SystemClock.currentThreadTimeMillis() - startTime;
-        System.out.println("Encrypted time: " +timeInterval);
+//        process time research purpose
+        System.out.println("Encrypted time: " + timeInterval);
         encprogressDialog.dismiss();
 
 
     }
+
+    // access cammera activity
     public void CaptureImage() {
         AnncaConfiguration.Builder photo = new AnncaConfiguration.Builder(this, CAPTURE_MEDIA);
         photo.setMediaAction(AnncaConfiguration.MEDIA_ACTION_PHOTO);
         photo.setMediaQuality(AnncaConfiguration.MEDIA_QUALITY_HIGHEST);
-        //videoLimited.setMediaResultBehaviour(AnncaConfiguration.CLOSE);
-
-
-        //videoLimited.setMinimumVideoDuration(60 * 1000);
         photo.setMediaResultBehaviour(AnncaConfiguration.PREVIEW);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -779,6 +709,7 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
         }
         new Annca(photo.build()).launchCamera();
     }
+
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             Intent intent2 = new Intent(Composer.this, MainActivity.class);
@@ -788,7 +719,6 @@ public class Composer extends AppCompatActivity implements View.OnClickListener{
 
         return super.onKeyDown(keyCode, event);
     }
-
 
 
 }
